@@ -8,9 +8,9 @@ const DB_URI = process.env.DB_URI;
 const AUTH_SERVICE_URI = process.env.AUTH_SERVICE_URI;
 const TG_BOT_KEY = process.env.TG_BOT_KEY;
 
-// if (!TG_BOT_KEY) {
-//     throw new Error('TG_BOT_KEY is not defined');
-// }
+if (!TG_BOT_KEY) {
+    throw new Error('TG_BOT_KEY is not defined');
+}
 if (!AUTH_SERVICE_URI) {
     throw new Error('AUTH_SERVICE_URI is not defined');
 }
@@ -25,12 +25,12 @@ if (!KAFKA_URI) {
 }
 
 const bootstrap = async () => {
-    // new TgEventsService(TG_BOT_KEY);
-    console.log(KAFKA_URI);
+    new TgEventsService(TG_BOT_KEY);
+    console.log(KAFKA_URI.split(","));
 
     const kafka = new Kafka({
         clientId: 'notify-service',
-        brokers: [KAFKA_URI],
+        brokers: KAFKA_URI.split(","),
     });
     const consumer = kafka.consumer({
         groupId: 'notify',
