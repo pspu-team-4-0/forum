@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node ./build/index.js",
     "build": "tsc --outdir ./build",
-    "dev": "tsx --env-file=.env ./src/index.ts"
+    "dev": "node --env-file=.env ./build/index.js"
   },
   "keywords": [],
   "author": "",

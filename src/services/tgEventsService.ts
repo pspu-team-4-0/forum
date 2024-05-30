@@ -26,4 +26,7 @@ export class TgEventsService {
         });
     }
 
+    async notify(message: string, chatId: string) {
+        await this.bot?.sendMessage(chatId, message, {});
+    }
 }

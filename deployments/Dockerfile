@@ -1,4 +1,4 @@
-FROM node:20-alpine as base
+FROM mirror.gcr.io/node:20-alpine as base
 
 WORKDIR /app
 

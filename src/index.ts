@@ -4,7 +4,6 @@ import {TgEventsService} from "./services/tgEventsService";
 
 const PORT = process.env.PORT;
 const KAFKA_URI = process.env.KAFKA_URI;
-const DB_URI = process.env.DB_URI;
 const AUTH_SERVICE_URI = process.env.AUTH_SERVICE_URI;
 const TG_BOT_KEY = process.env.TG_BOT_KEY;
 
@@ -14,9 +13,6 @@ if (!TG_BOT_KEY) {
 if (!AUTH_SERVICE_URI) {
     throw new Error('AUTH_SERVICE_URI is not defined');
 }
-if (!DB_URI) {
-    throw new Error('DB_URI is not defined');
-}
 if (!PORT) {
     throw new Error('PORT is not defined');
 }
@@ -24,9 +20,26 @@ if (!KAFKA_URI) {
     throw new Error('KAFKA_URI is not defined');
 }
 
+interface NotificationModel {
+    message: any;
+    userId: string;
+    timestamp: number;
+}
+
 const bootstrap = async () => {
-    new TgEventsService(TG_BOT_KEY);
+    const tgNotifier = new TgEventsService(TG_BOT_KEY);
     console.log(KAFKA_URI.split(","));
+
+    // basic key-value in-memory db
+    const notificationsDb: { [key: string]: any[] } = {};
+    const addNotification = (notification: NotificationModel) => {
+        tgNotifier.notify(notification.message, notification.userId);
+        if (!notificationsDb[notification.userId]) {
+            notificationsDb[notification.userId] = [notification];
+        } else {
+            notificationsDb[notification.userId].push(notification);
+        }
+    }
 
     const kafka = new Kafka({
         clientId: 'notify-service',
@@ -42,7 +55,38 @@ const bootstrap = async () => {
     });
     await consumer.run({
         eachMessage: async ({message, topic}) => {
-            console.log(`${topic}: ${message.value}`);
+            if (!message.value) {
+                console.log("no message provided")
+                return;
+            }
+            const notificationModel = JSON.parse(message.value.toString());
+            const notification = notificationModel as NotificationModel;
+            switch (true) {
+                case /notify.user.*/.test(topic):
+                    addNotification(notification);
+                    break;
+                case /notify.managment_company.*/.test(topic):
+                    addNotification(notification);
+                    // notify MC
+                    break;
+                case /notify.*.critical/.test(topic):
+                    addNotification(notification);
+                    // critically notify MC
+                    break;
+                default:
+                    addNotification(notification);
+                    break;
+            }
+            try {
+                if (!message.value) {
+                    console.log("error")
+                    return;
+                }
+                addNotification(notification);
+                return;
+            } catch (e) {
+                console.log(e);
+            }
         }
     });
 
@@ -57,12 +101,15 @@ const bootstrap = async () => {
             return;
         }
         const accessToken = accessHeader.split(' ')[1];
-
         // 2. check token and get user_id and tg_id from auth_service
+
         // 3. send existing notifications to user
+        const userId = 'test'; // getUserId();
         // 4. clear sent notifications
+        notificationsDb[userId] = [];
+        return notificationsDb[userId];
     });
-    server.listen({port: parseInt(PORT)}, (err, address) => {
+    server.listen({port: parseInt(PORT), host: "0.0.0.0"}, (err, address) => {
         if (err) {
             console.log(err);
             process.exit(1);
