@@ -21,7 +21,9 @@ export class TgEventsService {
                 console.log(e);
             }
         });
-        // this.bot.onText();
+        this.bot.onText(/^\+?[0-9]{3}-?[0-9]{6,12}$/, (msg) => {
+            console.log(msg);
+        });
     }
 
 }

@@ -33,11 +33,11 @@ const bootstrap = async () => {
         brokers: [KAFKA_URI],
     });
     const consumer = kafka.consumer({
-        groupId: 'notify-service',
+        groupId: 'notify',
     });
     await consumer.connect();
     await consumer.subscribe({
-        topics: ["notify"],
+        topics: [/notify.*/],
         fromBeginning: false,
     });
     await consumer.run({
