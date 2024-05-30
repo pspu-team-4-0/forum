@@ -53,3 +53,5 @@ const bootstrap = async () => {
         console.log(`Server started on port ${PORT}`);
     })
 }
+
+bootstrap();
