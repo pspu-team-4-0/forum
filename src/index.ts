@@ -41,6 +41,15 @@ const bootstrap = async () => {
     const server = fastify();
     server.get('/notifications', async (req, res) => {
         // 1. get token from header
+        const accessHeader = req.headers.authorization;
+        if (!accessHeader) {
+            res.status(401).send({
+                message: 'Unauthorized',
+             });
+            return;
+        }
+        const accessToken = accessHeader.split(' ')[1];
+
         // 2. check token and get user_id and tg_id from auth_service
         // 3. send existing notifications to user
         // 4. clear sent notifications
