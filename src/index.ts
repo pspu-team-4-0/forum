@@ -37,7 +37,7 @@ const bootstrap = async () => {
     });
     await consumer.connect();
     await consumer.subscribe({
-        topics: ["notify.*"],
+        topics: ["notify"],
         fromBeginning: false,
     });
     await consumer.run({
