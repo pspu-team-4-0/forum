@@ -1,11 +1,16 @@
 import {Kafka} from "kafkajs";
 import fastify from 'fastify';
+import {TgEventsService} from "./services/tgEventsService";
 
 const PORT = process.env.PORT;
 const KAFKA_URI = process.env.KAFKA_URI;
 const DB_URI = process.env.DB_URI;
 const AUTH_SERVICE_URI = process.env.AUTH_SERVICE_URI;
+const TG_BOT_KEY = process.env.TG_BOT_KEY;
 
+// if (!TG_BOT_KEY) {
+//     throw new Error('TG_BOT_KEY is not defined');
+// }
 if (!AUTH_SERVICE_URI) {
     throw new Error('AUTH_SERVICE_URI is not defined');
 }
@@ -20,6 +25,9 @@ if (!KAFKA_URI) {
 }
 
 const bootstrap = async () => {
+    // new TgEventsService(TG_BOT_KEY);
+    console.log(KAFKA_URI);
+
     const kafka = new Kafka({
         clientId: 'notify-service',
         brokers: [KAFKA_URI],
@@ -45,7 +53,7 @@ const bootstrap = async () => {
         if (!accessHeader) {
             res.status(401).send({
                 message: 'Unauthorized',
-             });
+            });
             return;
         }
         const accessToken = accessHeader.split(' ')[1];
