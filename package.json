@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "node --env-file=.env ./build/index.js",
-    "build": "tsc --outdir ./build"
+    "start": "node ./build/index.js",
+    "build": "tsc --outdir ./build",
+    "dev": "tsx ./src/index.ts"
   },
   "keywords": [],
   "author": "",
